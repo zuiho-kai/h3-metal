@@ -555,12 +555,27 @@ static int run_block(vae_context *vae, int index, char *error,
         weight->scale1, rows, HIDDEN), "video VAE attention residual");
     OP(h3_gpu_rms_norm_f32(vae->gpu, vae->norm, vae->hidden, weight->norm2,
         rows, HIDDEN, 1e-5f), "video VAE MLP norm");
-    OP(vae_linear(vae, vae->ff1, vae->norm, weight->w1,
-        weight->w1_b, rows, HIDDEN, FFN * 2), "video VAE MLP input");
-    OP(h3_gpu_swiglu_f32(vae->gpu, vae->activated, vae->ff1, rows, FFN),
-       "video VAE SwiGLU");
-    OP(vae_linear(vae, vae->branch, vae->activated, weight->w2,
-        weight->w2_b, rows, FFN, HIDDEN), "video VAE MLP output");
+    if (!vae->bf16) {
+        OP(vae_linear(vae, vae->ff1, vae->norm, weight->w1,
+            weight->w1_b, rows, HIDDEN, FFN * 2), "video VAE MLP input");
+        OP(h3_gpu_swiglu_f32(vae->gpu, vae->activated, vae->ff1, rows, FFN),
+           "video VAE SwiGLU");
+        OP(vae_linear(vae, vae->branch, vae->activated, weight->w2,
+            weight->w2_b, rows, FFN, HIDDEN), "video VAE MLP output");
+    } else {
+        OP(h3_gpu_cast_f32_to_bf16(vae->gpu, vae->bf_in, vae->norm,
+            rows * HIDDEN), "video VAE MLP input cast");
+        OP(h3_gpu_linear_bf16(vae->gpu, vae->bf_out, vae->bf_in,
+            weight->w1, weight->w1_b, rows, HIDDEN, FFN * 2),
+           "video VAE MLP input");
+        OP(h3_gpu_swiglu_bf16(vae->gpu, vae->bf_in, vae->bf_out,
+            rows, FFN), "video VAE SwiGLU");
+        OP(h3_gpu_linear_bf16(vae->gpu, vae->bf_out, vae->bf_in,
+            weight->w2, weight->w2_b, rows, FFN, HIDDEN),
+           "video VAE MLP output");
+        OP(h3_gpu_cast_bf16_to_f32(vae->gpu, vae->branch, vae->bf_out,
+            rows * HIDDEN), "video VAE MLP output cast");
+    }
     OP(h3_gpu_scale_add_f32(vae->gpu, vae->hidden, vae->hidden, vae->branch,
         weight->scale2, rows, HIDDEN), "video VAE MLP residual");
 #undef OP

@@ -2535,7 +2535,8 @@ static int run_block(h3_dit *dit, unsigned index, int step,
             weight->fc1, weight->fc2,
             rows, HIDDEN, FFN, HIDDEN,
             dit->use_slower_grouped_quantizer,
-            dit->use_slower_dynamic_fc1_k, dit->use_int8_row_fc2,
+            dit->use_slower_dynamic_fc1_k,
+            dit->use_int8_row_fc2 || dit->fasth3,
             fused_int8_mlp_input),
            "DiT int8 fused MLP");
     } else if (dit->nax_mlp && !getenv("H3_DISABLE_NAX_MLP")) {

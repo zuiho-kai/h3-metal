@@ -26,6 +26,8 @@ and int8 Metal TensorOps kernels.
 
 ## News
 
+- **2026-10-27 (later):** VAE projections skip the F32↔BF16 round trip and FC2 uses row-wise int8.
+  A warm clip now takes **18.20 s** — **4.03×** upstream h3.c and **7.40×** the MLX port.
 - **2026-10-27:** FastH3 4-step weights + block-sparse fine attention on by default.
   A warm clip now takes **18.55 s** — **3.95×** upstream h3.c and **7.3×** the MLX port.
 
@@ -46,14 +48,14 @@ Cold is compared with cold, warm with warm.
 | `PipeNetwork/minimax-h3-mlx` (4-bit) | 20 | 153.1 s | 134.6 s | 1.00× / 1.00× | 0.44× / 0.54× |
 | `antirez/h3.c`, default preset | 20 | 67.6 s | 73.3 s | 2.26× / 1.84× | 1.00× / 1.00× |
 | **h3-metal**, base weights | 20 | **63.3 s** | **39.5 s** | **2.42× / 3.41×** | **1.07× / 1.86×** |
-| **h3-metal** + FastH3 + sparse attention | 4 ¹ | **48.23 s** | **18.55 s** | **3.17× / 7.3×** | **1.40× / 3.95×** |
+| **h3-metal** + FastH3 + sparse attention | 4 ¹ | **48.23 s** | **18.20 s** | **3.17× / 7.40×** | **1.40× / 4.03×** |
 <!-- latest-performance:end -->
 
 ¹ FastH3 is a 4-step distilled DiT checkpoint
 ([FastVideo/FastH3](https://huggingface.co/FastVideo/FastVideo-FastH3-4-step-Preview-v1-VSA-DataFree));
 block-sparse attention keeps the top 12 of 120 video tiles per query tile, picked on the GPU from
 coarse scores. Same resolution, frames and seed as the other rows. The 20-step rows report warm
-as the mean of clips 2–4; the FastH3 row reports clip 2.
+as the mean of clips 2–4; the FastH3 row reports warm as the mean of two A/B/B/A warm runs.
 
 Reproduce a row with [`bench/run_fox2.sh`](bench/run_fox2.sh). Per-stage numbers come from
 `--profile`.
