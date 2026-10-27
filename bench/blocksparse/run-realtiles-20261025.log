@@ -1,0 +1,4 @@
+S=7936 H=56 tiles=124 prefix=4 video=120 topk=13  kept pairs 16.5%
+MPSGraph dense SDPA wall 31.709 ms
+bs kernel, full list   gpu 51.969 ms wall 52.161 ms  maxabs vs MPSGraph 0.003906
+bs kernel, top-k list  gpu 8.545 ms wall 8.686 ms  speedup vs MPSGraph dense 3.65x  maxabs vs CPU same-mask ref (3 heads) 0.001955

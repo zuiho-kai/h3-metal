@@ -1,0 +1,7 @@
+h3
+*.o
+*.d
+*.a
+outputs/
+MiniMax-H3/
+__pycache__/
