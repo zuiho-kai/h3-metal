@@ -26,10 +26,15 @@ mkdir -p outputs
 mapping all weights or generating media. Run `./h3 --help` for the complete CLI
 reference.
 
+Commands below that render media set `H3_VAE_BF16=1`, which runs the video
+decoder in BF16. That is how the README performance table was measured; without
+it the first segment is about 10 seconds slower and a warm FastH3 segment takes
+about 30 seconds instead of 17. `--info` renders nothing and does not need it.
+
 Without `-p`, the same binary starts an Iris-style interactive session:
 
 ```sh
-./h3 -d ./MiniMax-H3 --width 512 --height 512 --steps 6
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --width 512 --height 512 --steps 6
 ```
 
 Type a prompt to generate a numbered video. The session keeps the exact BF16
@@ -70,7 +75,7 @@ denoising transition in a supported graphical terminal, and prints phase
 timings:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A red fox walks through fresh snow in a pine forest. Medium tracking shot, natural winter light, realistic fur, soft footsteps and wind." \
   --width 512 --height 512 \
@@ -104,7 +109,7 @@ throttling.
 For a very short iteration, request four denoising passes directly:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A red fox walks through fresh snow in a pine forest. Medium tracking shot, natural winter light, realistic fur." \
   --width 512 --height 512 --frames 22 \
@@ -139,6 +144,10 @@ For a low-memory run, add `--ssd-streaming`:
   -o outputs/fox-ssd.mp4
 ```
 
+This low-memory command leaves out `H3_VAE_BF16=1` on purpose: the BF16 decoder
+adds about 3 GB to peak memory, and the README's 16--24 GB tier was measured
+without it.
+
 This uses the original BF16 checkpoint without conversion or quantization. It
 keeps two DiT blocks in memory and reads the next block from SSD while the GPU
 runs the current one. On M5 Max, tracked DiT storage fell from about 36.5 GiB to
@@ -164,7 +173,7 @@ then all denoiser evaluations, and finally raise the default 20-pass schedule
 to the slower 50-pass reference:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A red fox walks through fresh snow in a pine forest. Medium tracking shot, natural winter light, realistic fur, soft footsteps and wind." \
   --width 512 --height 512 \
@@ -207,7 +216,7 @@ To make the first command faster while keeping its output resolution, add
 token reduction:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A surfer riding inside a sharp blue ocean wave, one rider and one white board, realistic spray." \
   --width 512 --height 512 --frames 22 --steps 20 \
@@ -224,7 +233,7 @@ For an aggressive preview, render internally at 320 square and upscale to the
 requested 512 square output:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A red fox walking through snow, realistic, tracking shot." \
   --width 512 --height 512 \
@@ -242,7 +251,7 @@ As an alternative to whole-velocity reuse, this keeps the timestep-dependent
 patch and output heads fresh at every transition:
 
 ```sh
-./h3 --profile \
+H3_VAE_BF16=1 ./h3 --profile \
   -d ./MiniMax-H3 \
   -p "A surfer riding a blue ocean wave." \
   --width 512 --height 512 --frames 22 --steps 20 \
@@ -272,7 +281,7 @@ that every tiny canvas has good model quality. H3-Base is a 768p model.
 For a fast native 256-square preview:
 
 ```sh
-./h3 -d ./MiniMax-H3 \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 \
   -p "A red fox walks through fresh snow in a pine forest." \
   --width 256 --height 256 \
   --frames 22 --steps 20 \
@@ -348,7 +357,7 @@ prompt, seed, resolution, frame count, and step count.
 For example:
 
 ```sh
-./h3 --profile -d ./MiniMax-H3 -p "A hummingbird hovering over red flowers." \
+H3_VAE_BF16=1 ./h3 --profile -d ./MiniMax-H3 -p "A hummingbird hovering over red flowers." \
   --width 512 --height 512 --frames 22 --steps 20 \
   --layers 45 --reuse 2 --frames-dir outputs/hummingbird-frames \
   -o ''
@@ -359,7 +368,7 @@ For example:
 First/last-frame anchors select the FL2VA path:
 
 ```sh
-./h3 -d ./MiniMax-H3 -p "The fox keeps walking through the snow." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "The fox keeps walking through the snow." \
   --width 512 --height 512 --frames 22 --steps 20 \
   --layers 45 --reuse 2 \
   --first-frame fox.png --last-frame fox-later.png \
@@ -371,28 +380,28 @@ the media semantics:
 
 ```sh
 # One image reference.
-./h3 -d ./MiniMax-H3 -p "Use the animal and setting in the reference." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "Use the animal and setting in the reference." \
   --width 512 --height 512 --frames 22 --steps 20 \
   --ref-image fox.png -o outputs/fox-reference.mp4
 
 # Continue a clip but ignore its soundtrack.
-./h3 -d ./MiniMax-H3 -p "Continue the motion in this clip." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "Continue the motion in this clip." \
   --width 512 --height 512 --frames 22 --steps 20 \
   --ref-silent-video fox.mp4 -o outputs/fox-video-reference.mp4
 
 # Preserve the clip's embedded audio.
-./h3 -d ./MiniMax-H3 -p "Continue this audiovisual scene." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "Continue this audiovisual scene." \
   --width 512 --height 512 --frames 56 --steps 20 \
   --ref-video fox-with-audio.mp4 -o outputs/fox-video-audio.mp4
 
 # Replace a video's soundtrack explicitly.
-./h3 -d ./MiniMax-H3 -p "Continue the scene with the supplied music." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "Continue the scene with the supplied music." \
   --width 512 --height 512 --frames 56 --steps 20 \
   --ref-video-audio silent-fox.mp4 replacement.wav \
   -o outputs/fox-replaced-audio.mp4
 
 # An ordered image plus standalone audio reference.
-./h3 -d ./MiniMax-H3 -p "Use the animal and music from the references." \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "Use the animal and music from the references." \
   --width 512 --height 512 --frames 56 --steps 20 \
   --ref-image fox.png --ref-audio music.wav \
   -o outputs/fox-image-audio.mp4
@@ -789,7 +798,7 @@ byte-identical to the generic loop and saves about 0.1-0.4% in crossed complete
 forwards. Use `--use-slower-dynamic-fc1-k` to restore the runtime-bound loop.
 
 ```sh
-./h3 --profile -d ./MiniMax-H3 \
+H3_VAE_BF16=1 ./h3 --profile -d ./MiniMax-H3 \
   -p "A red fox walks through fresh snow." \
   --width 512 --height 512 --frames 22 --steps 20 \
   --layers 50 --reuse 1 -o outputs/fox-int8.mp4
