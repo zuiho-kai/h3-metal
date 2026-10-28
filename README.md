@@ -15,6 +15,11 @@
   <a href="README.zh.md">中文</a>
 </p>
 
+<p align="center">
+  <a href="assets/h3-metal-fox-4up.mp4"><img src="assets/h3-metal-fox-4up.gif" width="800" alt="Same prompt on four engines: h3-metal FastH3 4-step 18.20 s, h3-metal original H3 20-step 29.89 s, antirez/h3.c 20-step 73.3 s, MiniMax-H3 MLX 4-bit 20-step 134.6 s"></a><br>
+  <sub>One prompt, seed 0, 768×448, 49 frames, Apple M5 Max. Each label is that engine's warm time per clip (see <a href="#performance">Performance</a>). <a href="assets/h3-metal-fox-4up.mp4">Full-res MP4</a></sub>
+</p>
+
 ## About
 
 **h3-metal** runs FastH3 — the 4-step distilled MiniMax-H3 — natively on Metal, with the

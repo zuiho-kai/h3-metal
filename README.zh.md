@@ -15,6 +15,11 @@
   <a href="README.md">English</a>
 </p>
 
+<p align="center">
+  <a href="assets/h3-metal-fox-4up.mp4"><img src="assets/h3-metal-fox-4up.gif" width="800" alt="同一提示词四个引擎：h3-metal FastH3 4 步 18.20 秒、h3-metal 原版 H3 20 步 29.89 秒、antirez/h3.c 20 步 73.3 秒、MiniMax-H3 MLX 4bit 20 步 134.6 秒"></a><br>
+  <sub>同一提示词、seed 0、768×448、49 帧、Apple M5 Max。标签是各引擎热机生成一条的用时（口径见<a href="#性能">性能</a>）。<a href="assets/h3-metal-fox-4up.mp4">原画 MP4</a></sub>
+</p>
+
 ## 关于
 
 **h3-metal** 把 FastH3（4 步蒸馏版 MiniMax-H3）原生跑在 Metal 上，原版 20 步 H3 也一并支持。
