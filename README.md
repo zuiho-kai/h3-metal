@@ -88,14 +88,14 @@ make -j8
 Generate with the base weights:
 
 ```sh
-./h3 -d ./MiniMax-H3 -p "a red fox leaps off a mossy log at dawn" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "a red fox leaps off a mossy log at dawn" \
      --width 768 --height 448 --frames 49 --steps 20 --seed 0
 ```
 
 Generate with FastH3 (put the FastH3 `transformer/` folder at `./MiniMax-H3/FastH3-4step/transformer`):
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 -p "a red fox leaps off a mossy log at dawn" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 -p "a red fox leaps off a mossy log at dawn" \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 
@@ -106,13 +106,15 @@ is in [`docs/USAGE.md`](docs/USAGE.md).
 ## Pick a Config for Your Mac
 
 Find your unified memory and copy the command. Peak is the measured process peak memory on the
-test machine (same prompt and seed as Performance).
+test machine (same prompt and seed as Performance). `H3_VAE_BF16=1` runs the video decoder in BF16,
+as in Performance; it cuts a warm FastH3 clip from 30 s to 17 s. The 16–24 GB command leaves it off
+because it adds about 3 GB of peak memory there.
 
-| Mac memory | Setup | Peak memory | Cold clip |
+| Mac memory | Setup | Peak memory | Time (cold start, one clip) |
 | --- | --- | --- | --- |
 | **16–24 GB** | Original H3, 20 steps, SSD streaming, 640x384, 33 frames | **10.6 GB** | 77 s |
-| **32–36 GB** | FastH3 4-step + row-wise int8 FC2, 768x448, 49 frames | **22.9 GB** | 55 s |
-| **48 GB and up** | FastH3 4-step, interactive session with the model resident | **33.9 GB** | 57 s, then warm clips |
+| **32–36 GB** | FastH3 4-step + row-wise int8 FC2, 768x448, 49 frames | **22.9 GB** | 51 s |
+| **48 GB and up** | FastH3 4-step, interactive session with the model resident | **35.1 GB** | first clip 42 s, then 17 s per clip |
 
 **16–24 GB** — the DiT streams from SSD two blocks at a time:
 
@@ -126,7 +128,7 @@ The full 768x448, 49-frame clip peaks at 10.8 GB and takes 140 s.
 **32–36 GB** — FastH3 fully resident, one clip per run:
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 -p "a red fox leaps off a mossy log at dawn" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 -p "a red fox leaps off a mossy log at dawn" \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 
@@ -134,7 +136,7 @@ The full 768x448, 49-frame clip peaks at 10.8 GB and takes 140 s.
 type prompts one after another:
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 

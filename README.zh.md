@@ -82,14 +82,14 @@ make -j8
 用原版权重生成：
 
 ```sh
-./h3 -d ./MiniMax-H3 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
      --width 768 --height 448 --frames 49 --steps 20 --seed 0
 ```
 
 用 FastH3 生成（把 FastH3 的 `transformer/` 目录放到 `./MiniMax-H3/FastH3-4step/transformer`）：
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 
@@ -98,13 +98,13 @@ make -j8
 
 ## 按内存选配置
 
-看一眼自己 Mac 的统一内存，照抄对应命令。峰值是测试机上实测的进程峰值内存（提示词和种子同性能表）。
+看一眼自己 Mac 的统一内存，照抄对应命令。峰值是测试机上实测的进程峰值内存（提示词和种子同性能表）。`H3_VAE_BF16=1` 让视频解码走 BF16，和性能表一致，FastH3 热机一段从 30 秒降到 17 秒；16–24 GB 档不开，因为它会让峰值多出约 3 GB。
 
 | Mac 内存 | 配置 | 峰值内存 | 冷启动一段 |
 | --- | --- | --- | --- |
 | **16–24 GB** | 原版 H3 20 步，SSD 流式加载，640x384，33 帧 | **10.6 GB** | 77 秒 |
-| **32–36 GB** | FastH3 4 步 + 按行 int8 FC2，768x448，49 帧 | **22.9 GB** | 55 秒 |
-| **48 GB 及以上** | FastH3 4 步，交互会话，模型常驻 | **33.9 GB** | 首段 57 秒，之后走热机 |
+| **32–36 GB** | FastH3 4 步 + 按行 int8 FC2，768x448，49 帧 | **22.9 GB** | 51 秒 |
+| **48 GB 及以上** | FastH3 4 步，交互会话，模型常驻 | **35.1 GB** | 首段 42 秒，之后每段 17 秒 |
 
 **16–24 GB** —— DiT 每次只留两块在内存里，其余从 SSD 边读边算：
 
@@ -118,14 +118,14 @@ make -j8
 **32–36 GB** —— FastH3 全部常驻，一次出一段：
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 -p "黎明时分，一只红狐从长满苔藓的倒木上跃下" \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 
 **48 GB 及以上** —— 不带 `-p`，FastH3、解码器和文本条件都常驻，接着一条条输入提示词：
 
 ```sh
-./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 \
+H3_VAE_BF16=1 ./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 \
      --width 768 --height 448 --frames 49 --seed 0
 ```
 
