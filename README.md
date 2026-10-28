@@ -1,8 +1,9 @@
 <h1 align="center">h3-metal</h1>
 
 <p align="center">
-  <strong>The fastest MiniMax-H3 inference engine on the Mac — built for Apple silicon only.</strong><br>
-  About <b>4× faster</b> than upstream h3.c and <b>7× faster</b> than the native MLX port, warm against warm.
+  <strong>Metal-native FastH3 on the Mac — 4-step distilled H3 with block-sparse attention, straight on Apple GPUs.</strong><br>
+  FastH3 4-step renders a warm clip in <b>18.2 s</b>: about <b>4× faster</b> than upstream h3.c and <b>7× faster</b> than the MLX port (both 20-step).<br>
+  Original H3 at 20 steps runs here too, <b>1.9×</b> h3.c and <b>3.4×</b> MLX.
 </p>
 
 <p align="center">
@@ -15,7 +16,8 @@
 
 ## About
 
-**h3-metal** is a dedicated MiniMax-H3 text-to-video/audio engine for Apple GPUs: one model, one
+**h3-metal** runs FastH3 — the 4-step distilled MiniMax-H3 — natively on Metal, with the
+original 20-step H3 alongside. It is a dedicated text-to-video/audio engine for Apple GPUs: one model, one
 engine, written straight against Metal. Text encoder, DiT denoising, video VAE and audio VAE run
 in one native binary as one Metal command stream — no Python between the prompt and the GPU, no
 conversion step, no framework boundary per step.
@@ -26,6 +28,8 @@ and int8 Metal TensorOps kernels.
 
 ## News
 
+- **2026-10-28:** h3-metal is now Metal-native FastH3: the 4-step distilled checkpoint with
+  GPU block-sparse attention, written straight against Metal — no MLX, no Python.
 - **2026-10-27 (later):** VAE projections skip the F32↔BF16 round trip and FC2 uses row-wise int8.
   A warm clip now takes **18.20 s** — **4.03×** upstream h3.c and **7.40×** the MLX port.
 - **2026-10-27:** FastH3 4-step weights + block-sparse fine attention on by default.
@@ -47,8 +51,8 @@ Cold is compared with cold, warm with warm.
 | --- | --- | --- | --- | --- | --- |
 | `PipeNetwork/minimax-h3-mlx` (4-bit) | 20 | 153.1 s | 134.6 s | 1.00× / 1.00× | 0.44× / 0.54× |
 | `antirez/h3.c`, default preset | 20 | 67.6 s | 73.3 s | 2.26× / 1.84× | 1.00× / 1.00× |
-| **h3-metal**, base weights | 20 | **63.3 s** | **39.5 s** | **2.42× / 3.41×** | **1.07× / 1.86×** |
-| **h3-metal** + FastH3 + sparse attention | 4 ¹ | **48.23 s** | **18.20 s** | **3.17× / 7.40×** | **1.40× / 4.03×** |
+| **h3-metal**, original H3 | 20 | **63.3 s** | **39.5 s** | **2.42× / 3.41×** | **1.07× / 1.86×** |
+| **h3-metal**, FastH3 4-step + block-sparse attention | 4 ¹ | **48.23 s** | **18.20 s** | **3.17× / 7.40×** | **1.40× / 4.03×** |
 <!-- latest-performance:end -->
 
 ¹ FastH3 is a 4-step distilled DiT checkpoint
