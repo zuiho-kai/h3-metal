@@ -3,7 +3,7 @@
 <p align="center">
   <strong>Metal-native FastH3 on the Mac — 4-step distilled H3 with block-sparse attention, straight on Apple GPUs.</strong><br>
   FastH3 4-step renders a warm clip in <b>18.2 s</b>: about <b>4× faster</b> than upstream h3.c and <b>7× faster</b> than the MLX port (both 20-step).<br>
-  Original H3 at 20 steps runs here too, <b>1.9×</b> h3.c and <b>3.4×</b> MLX.
+  Original H3 at 20 steps runs here too: <b>29.9 s</b> warm, <b>2.5×</b> h3.c and <b>4.5×</b> MLX.
 </p>
 
 <p align="center">
@@ -28,6 +28,8 @@ and int8 Metal TensorOps kernels.
 
 ## News
 
+- **2026-10-28:** Original H3 at 20 steps drops to **29.89 s** warm (from 39.5 s) —
+  **2.45×** upstream h3.c and **4.50×** the MLX port.
 - **2026-10-28:** h3-metal is now Metal-native FastH3: the 4-step distilled checkpoint with
   GPU block-sparse attention, written straight against Metal — no MLX, no Python.
 - **2026-10-27 (later):** VAE projections skip the F32↔BF16 round trip and FC2 uses row-wise int8.
@@ -51,7 +53,7 @@ Cold is compared with cold, warm with warm.
 | --- | --- | --- | --- | --- | --- |
 | `PipeNetwork/minimax-h3-mlx` (4-bit) | 20 | 153.1 s | 134.6 s | 1.00× / 1.00× | 0.44× / 0.54× |
 | `antirez/h3.c`, default preset | 20 | 67.6 s | 73.3 s | 2.26× / 1.84× | 1.00× / 1.00× |
-| **h3-metal**, original H3 | 20 | **63.3 s** | **39.5 s** | **2.42× / 3.41×** | **1.07× / 1.86×** |
+| **h3-metal**, original H3 | 20 | **54.29 s** | **29.89 s** | **2.82× / 4.50×** | **1.25× / 2.45×** |
 | **h3-metal**, FastH3 4-step + block-sparse attention | 4 ¹ | **48.23 s** | **18.20 s** | **3.17× / 7.40×** | **1.40× / 4.03×** |
 <!-- latest-performance:end -->
 
