@@ -10,6 +10,7 @@
   <a href="#性能">性能</a> ·
   <a href="#快速开始">快速开始</a> ·
   <a href="#为什么快">为什么快</a> ·
+  <a href="#用-inferrsi-打磨">InferRSI</a> ·
   <a href="#路线图">路线图</a> ·
   <a href="README.md">English</a>
 </p>
@@ -22,7 +23,8 @@ Metal 写。文本编码器、DiT 去噪、视频 VAE、音频 VAE 全在同一�
 ——提示词到 GPU 之间没有 Python，没有模型转换，每一步也不穿过框架边界。
 
 它从 [antirez/h3.c](https://github.com/antirez/h3.c) 出发，为芯片继续往下压：FastH3 4 步蒸馏权重、
-GPU 块稀疏注意力、常驻的解码器和 DiT、int8 Metal TensorOps 内核。
+GPU 块稀疏注意力、常驻的解码器和 DiT、int8 Metal TensorOps 内核。每一处提速都用
+[InferRSI](https://github.com/InferMatrixLab/InferRSI) 测量和把关，见[用 InferRSI 打磨](#用-inferrsi-打磨)。
 
 ## 动态
 
@@ -101,6 +103,18 @@ make -j8
 M5 Max 实测 119.3 TOPS。
 
 **复用。** 文本条件、准备好的 DiT 和视频解码器跨条目常驻，下一条直接跳过加载和编码。
+
+## 用 InferRSI 打磨
+
+h3-metal 是 [**InferRSI**](https://github.com/InferMatrixLab/InferRSI) 的示范引擎。InferRSI 是推理引擎自我改进的工作台：
+提一个改动，对着冻结的基线测，过了门槛才留下。
+
+- **门槛开跑前定死。** 速度门槛和输出检查事先写好；对照配置和输入在所有候选间逐字节一致。
+- **交替 A/B 测速。** 冠军和候选在同一台安静的机器上交替跑，温度漂移和后台负载互相抵掉。
+- **模型提补丁。** 在 InferRSI 式循环里，模型写 Metal 内核和调度补丁，每条在沙箱里编译、测冷热，
+  晋级或淘汰。当前冠军（`9186baa`，热机 18.55 秒 → 18.20 秒）就出自这个循环。
+
+InferRSI 给方法，h3-metal 让它落到 Apple 芯片上真实的视频模型上。
 
 ## 路线图
 

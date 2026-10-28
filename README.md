@@ -10,6 +10,7 @@
   <a href="#performance">Performance</a> ·
   <a href="#quickstart">Quickstart</a> ·
   <a href="#why-it-is-fast">Why It Is Fast</a> ·
+  <a href="#built-with-inferrsi">InferRSI</a> ·
   <a href="#roadmap">Roadmap</a> ·
   <a href="README.zh.md">中文</a>
 </p>
@@ -24,7 +25,8 @@ conversion step, no framework boundary per step.
 
 It starts from [antirez/h3.c](https://github.com/antirez/h3.c) and pushes it further for the
 chip: FastH3 4-step distilled weights, GPU block-sparse attention, a resident decoder and DiT,
-and int8 Metal TensorOps kernels.
+and int8 Metal TensorOps kernels. Every speedup is measured and gated with
+[InferRSI](https://github.com/InferMatrixLab/InferRSI) — see [Built with InferRSI](#built-with-inferrsi).
 
 ## News
 
@@ -112,6 +114,23 @@ dynamic symmetric int8 — 119.3 TOPS measured on M5 Max.
 
 **Reused work.** Text conditioning, the prepared DiT and the video decoder stay resident across
 clips, so the next clip skips loading and encoding.
+
+## Built with InferRSI
+
+h3-metal is a showcase engine for [**InferRSI**](https://github.com/InferMatrixLab/InferRSI),
+a workbench for recursive self-improvement of inference engines: propose a change, measure it
+against a frozen baseline, keep it only if it clears the gate.
+
+- **Frozen gates, set before the run.** Speed thresholds and output checks are fixed up front;
+  the baseline config and inputs stay byte-identical across candidates.
+- **Alternating A/B timing.** Champion and candidate run interleaved on the same quiet machine,
+  so thermal drift and background load cancel out.
+- **Model-proposed patches.** In the InferRSI-style loop a model writes Metal kernel and
+  scheduling patches; each one is compiled in a sandbox, timed cold and warm, and promoted or
+  rejected. The current champion (`9186baa`, warm 18.55 s → 18.20 s) came out of this loop.
+
+InferRSI supplies the method; h3-metal is where it meets a real video model on Apple
+silicon.
 
 ## Roadmap
 
