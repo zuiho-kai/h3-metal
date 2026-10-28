@@ -9,6 +9,7 @@
 <p align="center">
   <a href="#performance">Performance</a> ·
   <a href="#quickstart">Quickstart</a> ·
+  <a href="#pick-a-config-for-your-mac">Pick by Memory</a> ·
   <a href="#why-it-is-fast">Why It Is Fast</a> ·
   <a href="#built-with-inferrsi">InferRSI</a> ·
   <a href="#roadmap">Roadmap</a> ·
@@ -102,6 +103,41 @@ Without `-p` the same binary opens an interactive session that keeps the model r
 where the warm numbers come from. The full CLI manual (presets, references, resolution, profiling)
 is in [`docs/USAGE.md`](docs/USAGE.md).
 
+## Pick a Config for Your Mac
+
+Find your unified memory and copy the command. Peak is the measured process peak memory on the
+test machine (same prompt and seed as Performance).
+
+| Mac memory | Setup | Peak memory | Cold clip |
+| --- | --- | --- | --- |
+| **16–24 GB** | Original H3, 20 steps, SSD streaming, 640x384, 33 frames | **10.6 GB** | 77 s |
+| **32–36 GB** | FastH3 4-step + row-wise int8 FC2, 768x448, 49 frames | **22.9 GB** | 55 s |
+| **48 GB and up** | FastH3 4-step, interactive session with the model resident | **33.9 GB** | 57 s, then warm clips |
+
+**16–24 GB** — the DiT streams from SSD two blocks at a time:
+
+```sh
+./h3 -d ./MiniMax-H3 --ssd-streaming -p "a red fox leaps off a mossy log at dawn" \
+     --width 640 --height 384 --frames 33 --steps 20 --seed 0
+```
+
+The full 768x448, 49-frame clip runs at the same 10.8 GB peak in 140 s.
+
+**32–36 GB** — FastH3 fully resident, one clip per run:
+
+```sh
+./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 -p "a red fox leaps off a mossy log at dawn" \
+     --width 768 --height 448 --frames 49 --seed 0
+```
+
+**48 GB and up** — leave out `-p` to keep FastH3, the decoder and text conditioning resident, then
+type prompts one after another:
+
+```sh
+./h3 -d ./MiniMax-H3 --fasth3 --use-int8-row-fc2 \
+     --width 768 --height 448 --frames 49 --seed 0
+```
+
 ## Why It Is Fast
 
 **Metal, natively.** The whole pipeline is one process and one Metal command stream. A denoising
@@ -143,7 +179,7 @@ silicon.
   a frozen harness compiles and times each one cold and warm, and a judge promotes or rejects
   it into a public ledger. The engine keeps getting faster without hand-tuning.
 - **Faster cold start** — int8 weight disk cache that loads straight into resident Metal buffers.
-- **Leaner memory** — close the gap to upstream h3.c's 30 GB peak.
+- **8 GB Macs** — BF16 video VAE weights and a streamed decoder to bring the whole run under 8 GB.
 - **Prebuilt binaries** and a one-line installer.
 
 ## Credits and License
