@@ -121,7 +121,7 @@ test machine (same prompt and seed as Performance).
      --width 640 --height 384 --frames 33 --steps 20 --seed 0
 ```
 
-The full 768x448, 49-frame clip runs at the same 10.8 GB peak in 140 s.
+The full 768x448, 49-frame clip peaks at 10.8 GB and takes 140 s.
 
 **32–36 GB** — FastH3 fully resident, one clip per run:
 
